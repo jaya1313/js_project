@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Scroll Background Color Parallax</title>
+  <style>
+    /* Basic styling */
+    :root { --text: #fff; }
+    html,body { height: 100%; margin: 0; }
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      transition: background-color 250ms linear;
+      color: var(--text);
+    }
+    /* Several full-screen sections to create scrollable content */
+    section {
+      height: 100vh;           /* full viewport height */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.25rem;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    header {
+      position: sticky;
+      top: 0;
+      padding: 0.6rem 1rem;
+      background: rgba(0,0,0,0.15);
+      backdrop-filter: blur(6px);
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <header>Scroll to change background color</header>
+
+  <section>Section 1</section>
+  <section>Section 2</section>
+  <section>Section 3</section>
+  <section>Section 4</section>
+
+  <script>
+    // Robust scroll-based background color changer
+    (function () {
+      const body = document.body;
+      // clamp helper
+      const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+
+      // Compute and apply background color based on scroll position
+      function applyBackground() {
+        const scrollTop = window.scrollY || window.pageYOffset;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+
+        // If there's no scrollable area, treat as 0 (avoid division by zero)
+        const scrollPercent = docHeight > 0 ? clamp(scrollTop / docHeight) : 0;
+
+        // Color interpolation — tweak ranges to taste
+        const r = Math.round(40 + 215 * scrollPercent);   // 40 -> 255
+        const g = Math.round(200 - 150 * scrollPercent);  // 200 -> 50
+        const b = Math.round(180 - 40 * scrollPercent);   // 180 -> 140
+
+        body.style.backgroundColor = rgb($(r), $(g), $(b));
+      }
+
+      // Throttle with requestAnimationFrame for smoothness & performance
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            applyBackground();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }, { passive: true });
+
+      // Run once to set initial color
+      applyBackground();
+
+      // Also update on resize (document height changes)
+      window.addEventListener('resize', applyBackground);
+    })();
+  </script>
+</body>
+</html>
